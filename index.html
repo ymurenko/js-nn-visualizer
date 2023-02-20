@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>jsai</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="diagram">
+        <div class="headings">
+          <h3>Input values</h3>
+          <h3>Input layer</h3>
+          <h3>Hidden layer 1</h3>
+          <h3>Hidden layer 2</h3>
+          <h3>Ouput layer</h3>
+        </div>
+        <div class="network">
+          <div class="layer l0">
+            <div class="perceptron l0p1"></div>
+            <div class="perceptron l0p2"></div>
+            <div class="perceptron l0p3"></div>
+            <div class="perceptron l0p4"></div>
+          </div>
+          <div class="layer l1">
+            <div class="perceptron l1p1"></div>
+            <div class="perceptron l1p2"></div>
+            <div class="perceptron l1p3"></div>
+            <div class="perceptron l1p4"></div>
+          </div>
+          <div class="layer l2">
+            <div class="perceptron l2p1"></div>
+            <div class="perceptron l2p2"></div>
+            <div class="perceptron l2p3"></div>
+            <div class="perceptron l2p4"></div>
+            <div class="perceptron l2p5"></div>
+          </div>
+          <div class="layer l3">
+            <div class="perceptron l3p1"></div>
+            <div class="perceptron l3p2"></div>
+            <div class="perceptron l3p3"></div>
+            <div class="perceptron l3p4"></div>
+            <div class="perceptron l3p5"></div>
+          </div>
+          <div class="layer l4">
+            <div class="perceptron l4p1"></div>
+          </div>
+          <svg class="connections" xmlns="http://www.w3.org/2000/svg">
+          </svg>
+        </div>
+        <div class="stats">
+          <div class="stat-block">
+            <h3>Num iterations:&nbsp;</h3>
+            <span class="num-iter">0</span>
+          </div>
+          <div class="stat-block">
+            <h3>Avg output error:&nbsp;</h3>
+            <span class="avg-err">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script
+      module="math"
+      src="https://unpkg.com/mathjs@11.5.1/lib/browser/math.js"
+      type="text/javascript"
+    ></script>
+    <script src="NeuralNetwork.js" type="text/javascript"></script>
+  </body>
+</html>

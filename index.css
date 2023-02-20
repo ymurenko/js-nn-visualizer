@@ -1,0 +1,106 @@
+body {
+  margin: 0;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.diagram,
+.headings,
+.network,
+.wrapper,
+.stats,
+.stat-block {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diagram {
+  width: 858px;
+  height: 550px;
+  text-align: center;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.headings {
+  width: 100%;
+  height: 100px;
+  justify-content: center;
+  gap: 138.5px;
+}
+
+.headings h3 {
+  width: 60px;
+}
+
+.network {
+  width: 100%;
+  height: 450px;
+  gap: 150px;
+}
+
+.layer {
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  width: 50px;
+}
+
+.stats,
+.stat-block,
+.network {
+  flex-direction: row;
+}
+
+.stats {
+  width: 100%;
+  justify-content: space-around;
+}
+
+.stat-block {
+  line-height: 20px;
+}
+
+.perceptron {
+  /* transition: background-color 0.1s; */
+  background-color: rgb(200, 200, 200);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  position: relative;
+  z-index: 2;
+}
+
+.l1 .label,
+.l2 .label,
+.l3 .label {
+  color: white;
+  text-shadow: 1px 1px black;
+}
+
+.l0,
+.l4 {
+  width: 54px;
+}
+
+.l0 .perceptron,
+.l4 .perceptron {
+  border: 2px solid black;
+  background-color: white;
+}
+
+.label {
+  text-align: center;
+  line-height: 15px;
+}
+
+svg {
+  /* transition: all 0.5s; */
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
