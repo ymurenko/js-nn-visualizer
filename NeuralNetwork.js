@@ -28,7 +28,63 @@ function sigmoid_derivative(x) {
   return x * (1 - x);
 }
 
-function drawSvgLine(svgElement, startId, endId, modifier, weight) {
+function getSvgLineLength(x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function drawSvgTriangles(svgElement, startId, endId, modifier, weight) {
+  let startDiv;
+  let endDiv;
+  if (weight > 0) {
+    startDiv = document.querySelector(startId);
+    endDiv = document.querySelector(endId);
+  }
+  if (weight < 0) {
+    startDiv = document.querySelector(endId);
+    endDiv = document.querySelector(startId);
+  }
+  if (weight !== 0) {
+    const startX = startDiv.offsetLeft + startDiv.offsetWidth / 2;
+    const startY = startDiv.offsetTop + startDiv.offsetHeight / 2;
+    const endX = endDiv.offsetLeft + endDiv.offsetWidth / 2;
+    const endY = endDiv.offsetTop + endDiv.offsetHeight / 2;
+
+    const distanceModifier = getSvgLineLength(startX, startY, endX, endY) / 450;
+    const width =  (55 * distanceModifier) / (modifier * Math.abs(weight));
+    const length = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+    
+    const angle = Math.atan2(endY - startY, endX - startX);
+    const angleOffset = Math.PI / 6; // adjust this to change the angle of the triangle
+
+    const x1 = startX;
+    const y1 = startY;
+    const x2 = endX - (length / width) * Math.cos(angle + angleOffset);
+    const y2 = endY - (length / width) * Math.sin(angle + angleOffset);
+    const x3 = endX - (length / width) * Math.cos(angle - angleOffset);
+    const y3 = endY - (length / width) * Math.sin(angle - angleOffset);
+
+    const opacity = Math.max(Math.abs(modifier * weight), 0.15);
+
+    const polygon = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "polygon"
+    );
+    polygon.setAttribute("points", `${x1},${y1} ${x2},${y2} ${x3},${y3}`);
+    polygon.setAttribute(
+      "style",
+      `fill: black; 
+       stroke: black;
+       stroke-width: 3px;
+       opacity: ${opacity};`
+    );
+
+    svgElement.appendChild(polygon);
+  }
+}
+
+function drawSvgLines(svgElement, startId, endId, modifier, weight) {
   const startDiv = document.querySelector(startId);
   const endDiv = document.querySelector(endId);
 
@@ -44,7 +100,7 @@ function drawSvgLine(svgElement, startId, endId, modifier, weight) {
   line.setAttribute("y2", endY);
   line.setAttribute(
     "style",
-    `stroke: black; stroke-width: ${Math.max(
+    `stroke: black;stroke-width: ${Math.max(
       Math.abs(weight) * 10,
       3
     )}px; opacity: ${Math.max(Math.abs(modifier * weight), 0.15)};`
@@ -52,10 +108,30 @@ function drawSvgLine(svgElement, startId, endId, modifier, weight) {
   svgElement.appendChild(line);
 }
 
-function getColor(value) {
+function getOutputColor(value) {
   const color1 = [0, 255, 0];
   const color2 = [255, 0, 0];
   const blend = (value - 1) / 9;
+  const r = Math.round(color1[0] * (1 - blend) + color2[0] * blend);
+  const g = Math.round(color1[1] * (1 - blend) + color2[1] * blend);
+  const b = Math.round(color1[2] * (1 - blend) + color2[2] * blend);
+  return `rgb(${r},${g},${b})`;
+}
+
+function getStrokeColor(value) {
+  const color1 = [3, 136, 252];
+  const color2 = [252, 61, 3];
+  const blend = (value + 1) / 3;
+  const r = Math.round(color1[0] * (1 - blend) + color2[0] * blend);
+  const g = Math.round(color1[1] * (1 - blend) + color2[1] * blend);
+  const b = Math.round(color1[2] * (1 - blend) + color2[2] * blend);
+  return `rgb(${r},${g},${b})`;
+}
+
+function getPerceptronColor(value) {
+  const color1 = [3, 136, 252];
+  const color2 = [252, 61, 3];
+  const blend = value;
   const r = Math.round(color1[0] * (1 - blend) + color2[0] * blend);
   const g = Math.round(color1[1] * (1 - blend) + color2[1] * blend);
   const b = Math.round(color1[2] * (1 - blend) + color2[2] * blend);
@@ -233,7 +309,8 @@ class NeuralNetwork {
   updatePerceptrons(layer, depth, values) {
     for (let i = 0; i < layer.length; i++) {
       const value = 200 - values[0][i] * 200;
-      layer[i].style.backgroundColor = `rgb(${value},${value},${value})`;
+      // layer[i].style.backgroundColor = getPerceptronColor(values[0][i]);
+      layer[i].style.backgroundColor = `rgb(${value}, ${value}, ${value})`
       setLabel(layer[i], `label-l${depth}p${i + 1}`, values[0][i].toFixed(2));
     }
   }
@@ -254,7 +331,7 @@ class NeuralNetwork {
           Math.abs(expected_output[0][i] - this.layer3[0][0]) /
           expected_output[0][i];
       }
-      l4[i].style.backgroundColor = getColor(error * 10);
+      l4[i].style.backgroundColor = getOutputColor(error * 10);
       this.sum_error += error;
     }
   }
@@ -268,40 +345,42 @@ class NeuralNetwork {
     svg.setAttribute("height", "100%");
     // const percent_complete =
     //   this.num_iter / (TRAINING_ITERATIONS * this.dataset_length);
-    const error_modifier = Math.max(1 - (this.sum_error / this.num_iter), 0.001);
-    console.log(error_modifier);
-    for (let i = 0; i < 1; i++) {
-      for (let j = 0; j < 5; j++) {
-        drawSvgLine(
+    const error_modifier = Math.max(1 - this.sum_error / this.num_iter, 0.001);
+    for (let i = 0; i < this.num_outputs; i++) {
+      for (let j = 0; j < this.num_hidden_nodes; j++) {
+        drawSvgTriangles(
           svg,
-          `.l4p${i + 1}`,
           `.l3p${j + 1}`,
-          error_modifier, nn.weights3[j][i]
+          `.l4p${i + 1}`,
+          error_modifier,
+          nn.weights3[j][i]
         );
       }
     }
-    for (let i = 0; i < 5; i++) {
-      for (let j = 0; j < 5; j++) {
-        drawSvgLine(
+    for (let i = 0; i < this.num_hidden_nodes; i++) {
+      for (let j = 0; j < this.num_hidden_nodes; j++) {
+        drawSvgTriangles(
           svg,
-          `.l3p${i + 1}`,
           `.l2p${j + 1}`,
-          error_modifier, nn.weights2[j][i]
+          `.l3p${i + 1}`,
+          error_modifier,
+          nn.weights2[j][i]
         );
       }
     }
-    for (let i = 0; i < 5; i++) {
-      for (let j = 0; j < 4; j++) {
-        drawSvgLine(
+    for (let i = 0; i < this.num_hidden_nodes; i++) {
+      for (let j = 0; j < this.num_inputs; j++) {
+        drawSvgTriangles(
           svg,
-          `.l2p${i + 1}`,
           `.l1p${j + 1}`,
-          error_modifier, nn.weights1[j][i]
+          `.l2p${i + 1}`,
+          error_modifier,
+          nn.weights1[j][i]
         );
       }
     }
     for (let i = 0; i < 4; i++) {
-      drawSvgLine(svg, `.l1p${i + 1}`, `.l0p${i + 1}`, 0.5);
+      drawSvgTriangles(svg, `.l0p${i + 1}`, `.l1p${i + 1}`, 0.5, 1);
     }
     elS.appendChild(svg);
     refreshElement(svg);
@@ -337,7 +416,7 @@ for (let i = 1; i <= TRAINING_ITERATIONS; i++) {
 }
 setTimeout(() => {
   nn.feedforward(input_data, true);
-  console.log("weights1", nn.weights1)
-  console.log("weights2", nn.weights2)
-  console.log("weights3", nn.weights3)
+  console.log("weights1", nn.weights1);
+  console.log("weights2", nn.weights2);
+  console.log("weights3", nn.weights3);
 }, TRAINING_ITERATIONS * UPDATE_INTERVAL + 500);
