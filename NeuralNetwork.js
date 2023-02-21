@@ -74,9 +74,9 @@ function drawSvgTriangles(svgElement, startId, endId, modifier, weight) {
     polygon.setAttribute("points", `${x1},${y1} ${x2},${y2} ${x3},${y3}`);
     polygon.setAttribute(
       "style",
-      `fill: black; 
+      `fill: ${getStrokeColor(weight)}; 
        stroke: black;
-       stroke-width: 3px;
+       stroke-width: 2px;
        opacity: ${opacity};`
     );
 
@@ -119,6 +119,11 @@ function getOutputColor(value) {
 }
 
 function getStrokeColor(value) {
+  if(value > 3) {
+    return `rgb(${3},${136},${252})`
+  } else if (value < -3){
+    return `rgb(${252},${136},${3})`
+  }
   const color1 = [3, 136, 252];
   const color2 = [252, 61, 3];
   const blend = (value + 1) / 3;
